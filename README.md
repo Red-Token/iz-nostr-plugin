@@ -1,1 +1,1 @@
-# iz-nosrt-plugin
+# iz-nostr-plugin
