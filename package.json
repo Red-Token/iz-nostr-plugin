@@ -1,0 +1,25 @@
+{
+  "name": "iz-nostr-plugin",
+  "version": "0.0.1",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "pack": "npx webpack"
+  },
+  "keywords": [],
+  "author": "Rene Malmgren",
+  "license": "GPL-3.0-only",
+  "description": "",
+  "devDependencies": {
+    "@types/chrome": "^0.0.309",
+    "@types/webextension-polyfill": "^0.12.3",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.2",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "async-mutex": "^0.5.0",
+    "nostr-tools": "^2.10.4",
+    "webextension-polyfill": "^0.12.0"
+  }
+}
