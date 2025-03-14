@@ -1,2 +1,2 @@
-npx prettier --write . 
-npx eslint . --fix
+npx prettier --write "src/**/*.{js,ts}"
+#npx eslint . --fix

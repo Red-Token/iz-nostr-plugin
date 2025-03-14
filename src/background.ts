@@ -1,25 +1,25 @@
 import browser, {Windows} from 'webextension-polyfill'
-import {sayHello} from "./utils";
+import {sayHello} from './utils'
 import {
     getPermissionStatus,
     getPosition,
     NO_PERMISSIONS_REQUIRED,
     showNotification,
     updatePermission
-} from "./explode/common";
-import * as nip19 from "nostr-tools/nip19";
-import {EventPointer, NEvent, ProfilePointer} from "nostr-tools/nip19";
-import {Mutex} from "async-mutex";
-import {finalizeEvent, getPublicKey, validateEvent} from "nostr-tools/pure";
-import * as nip04 from "nostr-tools/nip04";
-import * as nip44 from "nostr-tools/nip44";
-import CreateCreateDataType = Windows.CreateCreateDataType;
-import * as url from "node:url";
+} from './explode/common'
+import * as nip19 from 'nostr-tools/nip19'
+import {EventPointer, NEvent, ProfilePointer} from 'nostr-tools/nip19'
+import {Mutex} from 'async-mutex'
+import {finalizeEvent, getPublicKey, validateEvent} from 'nostr-tools/pure'
+import * as nip04 from 'nostr-tools/nip04'
+import * as nip44 from 'nostr-tools/nip44'
+import CreateCreateDataType = Windows.CreateCreateDataType
+import * as url from 'node:url'
 
 browser.runtime.onInstalled.addListener(() => {
-    console.log("Service Worker Loaded (TypeScript)!!!!");
-    sayHello();
-});
+    console.log('Service Worker Loaded (TypeScript)!!!!')
+    sayHello()
+})
 
 // Listen for messages from other parts of the extension (e.g., content scripts or popup)
 // browser.runtime.onMessage.addListener((message: any, sender, sendResponse) => {
@@ -54,14 +54,16 @@ export async function openSignUpWindow() {
     })
 }
 
-let openPrompt: any;
+let openPrompt: any
 
-let releasePromptMutex = () => {
-}
+let releasePromptMutex = () => {}
 
-export async function handlePromptMessage({host, type, accept, conditions}: any, sender: {
-    tab: { windowId: number; };
-}) {
+export async function handlePromptMessage(
+    {host, type, accept, conditions}: any,
+    sender: {
+        tab: {windowId: number}
+    }
+) {
     // return response
     openPrompt?.resolve?.(accept)
 
@@ -83,18 +85,18 @@ export async function handlePromptMessage({host, type, accept, conditions}: any,
 }
 
 browser.runtime.onMessage.addListener(async (message: any, sender: any) => {
-    console.log(`Received ${message}`);
+    console.log(`Received ${message}`)
     if (message.openSignUp) {
-        console.log(`Received4 ${message}`);
+        console.log(`Received4 ${message}`)
         await openSignUpWindow()
         browser.windows.remove(sender.tab.windowId)
     } else {
-        let {prompt} = message
+        const {prompt} = message
         if (prompt) {
-            console.log(`Received3 ${message}`);
+            console.log(`Received3 ${message}`)
             await handlePromptMessage(message, sender)
         } else {
-            console.log(`Received2 ${message}`);
+            console.log(`Received2 ${message}`)
             return handleContentScriptMessage(message)
         }
     }
@@ -107,13 +109,12 @@ browser.runtime.onMessage.addListener(async (message: any, sender: any) => {
 //     }
 // )
 
-let promptMutex = new Mutex()
+const promptMutex = new Mutex()
 
-async function performOperation(type: any, params: { event?: any; peer?: any; plaintext?: any; ciphertext?: any; }) {
+async function performOperation(type: any, params: {event?: any; peer?: any; plaintext?: any; ciphertext?: any}) {
+    console.log(`Performing ${type}: ${JSON.stringify(params, null, 2)}`)
 
-    console.log(`Performing ${type}: ${JSON.stringify(params, null, 2)}`);
-
-    let results = await browser.storage.local.get('private_key')
+    const results = await browser.storage.local.get('private_key')
 
     console.log('sk:' + JSON.stringify(results))
 
@@ -121,7 +122,7 @@ async function performOperation(type: any, params: { event?: any; peer?: any; pl
         return {error: {message: 'no private key found'}}
     }
 
-    let sk = results.private_key as Uint8Array
+    const sk = results.private_key as Uint8Array
     try {
         switch (type) {
             case 'getPublicKey': {
@@ -129,16 +130,14 @@ async function performOperation(type: any, params: { event?: any; peer?: any; pl
             }
             case 'signEvent': {
                 const event = finalizeEvent(params.event, sk)
-                return validateEvent(event)
-                    ? event
-                    : {error: {message: 'invalid event'}}
+                return validateEvent(event) ? event : {error: {message: 'invalid event'}}
             }
             case 'nip04.encrypt': {
-                let {peer, plaintext} = params
+                const {peer, plaintext} = params
                 return nip04.encrypt(sk, peer, plaintext)
             }
             case 'nip04.decrypt': {
-                let {peer, ciphertext} = params
+                const {peer, ciphertext} = params
                 return nip04.decrypt(sk, peer, ciphertext)
             }
             // case 'nip44.encrypt': {
@@ -165,32 +164,35 @@ async function askForPermission(url: string) {
 }
 
 async function handleContentScriptMessage({type, params, host}: any, sender?: any) {
-    const t: string = type as string;
+    const t: string = type as string
 
     if (NO_PERMISSIONS_REQUIRED[t]) {
         // authorized, and we won't do anything with private key here, so do a separate handler
 
-        console.log("HHHHH" + type + ":" + params)
+        console.log('HHHHH' + type + ':' + params)
 
         switch (type) {
             case 'replaceURL': {
-                let {protocol_handler: ph} = await browser.storage.local.get([
-                    'protocol_handler'
-                ])
+                const {protocol_handler: ph} = await browser.storage.local.get(['protocol_handler'])
                 if (!ph) return false
 
-                let {url} = params
-                let raw = url.split('nostr:')[1]
-                let {type, data} = nip19.decode(raw)
+                const {url} = params
+                const raw = url.split('nostr:')[1]
+                const {type, data} = nip19.decode(raw)
 
-                const nprofile: ProfilePointer | undefined = type === "nprofile" ? data as ProfilePointer : undefined
+                const nprofile: ProfilePointer | undefined = type === 'nprofile' ? (data as ProfilePointer) : undefined
 
-                let replacements = {
+                const replacements = {
                     raw,
                     hrp: type,
-                    hex: type === 'npub' || type === 'note' ? data :
-                        type === 'nprofile' ? (data as ProfilePointer).pubkey :
-                            type === 'nevent' ? (data as EventPointer).id : null,
+                    hex:
+                        type === 'npub' || type === 'note'
+                            ? data
+                            : type === 'nprofile'
+                              ? (data as ProfilePointer).pubkey
+                              : type === 'nevent'
+                                ? (data as EventPointer).id
+                                : null,
                     // TODO We have added ranodm replacements here will this work?
                     p_or_e: {npub: 'p', note: 'e', nprofile: 'p', nevent: 'e', naddr: 'p', nsec: 'p'}[type],
                     u_or_n: {npub: 'u', note: 'n', nprofile: 'u', nevent: 'n', naddr: 'n', nsec: 'n'}[type],
@@ -209,21 +211,16 @@ async function handleContentScriptMessage({type, params, host}: any, sender?: an
 
         return
     } else {
-
-        console.log("HHHHssssH" + type + ":" + params)
+        console.log('HHHHssssH' + type + ':' + params)
         // // acquire mutex here before reading policies
         releasePromptMutex = await promptMutex.acquire()
 
-        console.log("HHHHssssssssssH" + type + ":" + params)
+        console.log('HHHHssssssssssH' + type + ':' + params)
 
         // do the operation before asking (because we'll show the encryption/decryption results in the popup
         const finalResult = await performOperation(type, params)
 
-        let allowed = await getPermissionStatus(
-            host,
-            type,
-            type === 'signEvent' ? params.event : undefined
-        )
+        const allowed = await getPermissionStatus(host, type, type === 'signEvent' ? params.event : undefined)
 
         if (allowed === true) {
             // authorized, proceed
@@ -239,8 +236,8 @@ async function handleContentScriptMessage({type, params, host}: any, sender?: an
         } else {
             // ask for authorization
             try {
-                let id = Math.random().toString().slice(4)
-                let qs = new URLSearchParams({
+                const id = Math.random().toString().slice(4)
+                const qs = new URLSearchParams({
                     host,
                     id,
                     params: JSON.stringify(params),
@@ -255,7 +252,7 @@ async function handleContentScriptMessage({type, params, host}: any, sender?: an
                 //     resolve(askForPermission(qs.toString()))
                 // })
 
-                let accept = await askForPermission(qs.toString())
+                const accept = await askForPermission(qs.toString())
                 releasePromptMutex()
 
                 // denied, stop here
@@ -273,6 +270,3 @@ async function handleContentScriptMessage({type, params, host}: any, sender?: an
         return finalResult
     }
 }
-
-
-

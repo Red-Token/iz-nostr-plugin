@@ -1,20 +1,20 @@
-const path = require("path");
+const path = require('path')
 
 module.exports = {
-    mode: "production",
-    entry: "./src/background.ts",
+    mode: 'production',
+    entry: './src/background.ts',
     output: {
-        path: path.resolve(__dirname, "dist"),
-        filename: "test-background.bundle.js"
+        path: path.resolve(__dirname, 'dist'),
+        filename: 'test-background.bundle.js'
     },
     resolve: {
-        extensions: [".ts", ".js"]
+        extensions: ['.ts', '.js']
     },
     module: {
         rules: [
             {
                 test: /\.ts$/,
-                use: "ts-loader",
+                use: 'ts-loader',
                 exclude: /node_modules/
             }
         ]
@@ -22,4 +22,4 @@ module.exports = {
     experiments: {
         outputModule: true // Enable ESM output
     }
-};
+}
