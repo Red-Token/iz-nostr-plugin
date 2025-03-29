@@ -1,6 +1,6 @@
 {
 	"name": "@red-token/nos2x-electron",
-	"version": "0.1.4-snapshot.5",
+	"version": "0.1.4",
 	"description": "nos2x extension for Electron apps",
 	"main": "dist/index.js",
 	"type": "module",
