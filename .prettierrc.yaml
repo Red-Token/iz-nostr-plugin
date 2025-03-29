@@ -1,0 +1,9 @@
+arrowParens: avoid
+bracketSpacing: false
+printWidth: 100
+proseWrap: preserve
+semi: false
+singleQuote: true
+trailingComma: none
+useTabs: true
+endOfLine: lf

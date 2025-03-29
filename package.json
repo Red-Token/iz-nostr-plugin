@@ -1,5 +1,5 @@
 {
-	"name": "@red-token/iz-nostr-plugin-electron",
+	"name": "@red-token/nos2x-electron",
 	"version": "0.1.3",
 	"description": "nos2x extension for Electron apps",
 	"main": "dist/index.js",

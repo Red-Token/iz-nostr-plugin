@@ -1,0 +1,21 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "ESNext",
+		"lib": ["DOM", "ES2022"],
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"outDir": "dist/extension",
+		"sourceMap": false,
+		"moduleResolution": "bundler",
+		"resolveJsonModule": true,
+		"declaration": true,
+		"declarationDir": "dist/extension",
+		"jsx": "react-jsx",
+		"allowSyntheticDefaultImports": true
+	},
+	"include": ["./**/*.ts", "./**/*.tsx", "*.ts"],
+	"exclude": ["node_modules", "dist", "old"]
+}
