@@ -1,0 +1,69 @@
+{
+	"name": "@red-token/iz-nostr-plugin-electron",
+	"version": "0.1.3",
+	"description": "nos2x extension for Electron apps",
+	"main": "dist/index.js",
+	"type": "module",
+	"publishConfig": {
+		"access": "public"
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "npm run clean && node build.js",
+		"build:prod": "node build.js prod",
+		"build:ts": "tsc",
+		"format": "prettier --write .",
+		"clean": "rimraf dist",
+		"patch": "npm version patch",
+		"snapshot": "npm version prerelease --preid snapshot --no-git-tag-version",
+		"test": "echo \"No tests yet\"",
+		"start": "npm run build && electron test-integration.js"
+	},
+	"keywords": [
+		"nostr",
+		"electron",
+		"extension"
+	],
+	"author": "",
+	"license": "MIT",
+	"dependencies": {
+		"async-mutex": "^0.5.0",
+		"electron-store": "10",
+		"electron": "34",
+		"rimraf": "^5.0.1",
+		"events": "^3.3.0",
+		"nostr-tools": "^2.5.0",
+		"prettier": "^2.5.1",
+		"qrcode-parser": "^2.1.3",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"react-qr-code": "^2.0.11",
+		"use-debounce": "^7.0.1"
+	},
+	"peerDependencies": {
+		"electron": "34",
+		"nostr-tools": "^2.5.0",
+		"async-mutex": "^0.5.0"
+	},
+	"devDependencies": {
+		"async-mutex": "^0.5.0",
+		"@types/node": "^20.5.7",
+		"@types/react": "^18.2.21",
+		"@types/react-dom": "^18.2.7",
+		"electron": "34",
+		"electron-store": "10",
+		"esbuild": "^0.25.0",
+		"nostr-tools": "^2.5.0",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"rimraf": "^5.0.1",
+		"typescript": "^5.7.3"
+	},
+	"types": "./dist/extension-init.d.ts",
+	"exports": {
+		".": "./dist/index.js",
+		"./extension-init": "./dist/extension-init.js"
+	}
+}
