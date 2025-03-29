@@ -16,7 +16,7 @@
 
 ```bash
 # Клонирование репозитория
-git clone https://github.com/yourusername/nos2x-electron.git
+git clone https://github.com/red-token/nos2x-electron.git
 
 # Переход в директорию проекта
 cd nos2x-electron

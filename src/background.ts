@@ -23,7 +23,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 // Global variables for handlers
-const width = 440
+const width = 640
 const height = 420
 
 let openPrompt: BrowserWindow | null = null
@@ -53,7 +53,7 @@ function getSharedSecret(sk: string, peer: string): any {
 		previousSk = sk
 	}
 
-	let key = secretsCache.get(peer)
+	let key // = secretsCache.get(peer)
 
 	if (!key) {
 		// Convert string to Uint8Array for nostr-tools
@@ -111,15 +111,15 @@ async function handleContentScriptMessage({type, params, host}: ExtensionMessage
 					raw,
 					hrp: nipType,
 					hex: typeof data === 'string' ? data : null,
-					p_or_e: p_or_e[nipType as NipTypes] || null,
-					u_or_n: u_or_n[nipType as NipTypes] || null,
+					p_or_e: p_or_e[nipType as NipTypes] ?? null,
+					u_or_n: u_or_n[nipType as NipTypes] ?? null,
 					relay0: null,
 					relay1: null,
 					relay2: null
 				}
 
 				if (nipType === 'nprofile' && typeof data === 'object' && 'relays' in data) {
-					const relays = (data as any).relays || []
+					const relays = data.relays || []
 					replacements.relay0 = relays[0] || null
 					replacements.relay1 = relays[1] || null
 					replacements.relay2 = relays[2] || null
@@ -127,7 +127,7 @@ async function handleContentScriptMessage({type, params, host}: ExtensionMessage
 
 				let result = protocolHandler
 				Object.entries(replacements).forEach(([pattern, value]) => {
-					result = result.replace(new RegExp(`{ *${pattern} *}`, 'g'), value || '')
+					result = result.replace(new RegExp(`{ *${pattern} *}`, 'g'), value ?? '')
 				})
 
 				return result
@@ -146,7 +146,8 @@ async function handleContentScriptMessage({type, params, host}: ExtensionMessage
 			finalResult.error
 		) {
 			releasePromptMutex()
-			return finalResult
+			// showNotification //TODO: implement electron notify
+			return
 		}
 
 		let allowed = await getPermissionStatus(
@@ -162,9 +163,6 @@ async function handleContentScriptMessage({type, params, host}: ExtensionMessage
 		} else if (allowed === false) {
 			releasePromptMutex()
 			showNotification(host, allowed, type, params)
-			return {
-				error: {message: 'denied'}
-			}
 		} else {
 			try {
 				let id = Math.random().toString().slice(4)
@@ -179,8 +177,8 @@ async function handleContentScriptMessage({type, params, host}: ExtensionMessage
 				)
 
 				releasePromptMutex()
-				if (!accept) return {error: {message: 'denied'}}
-
+				if (!accept)
+				return {error: {message: 'denied'}}
 				return finalResult
 			} catch (err: unknown) {
 				releasePromptMutex()
@@ -195,57 +193,51 @@ async function handleContentScriptMessage({type, params, host}: ExtensionMessage
 
 // Function for performing nostr operations
 async function performOperation(type: string, params: any) {
-	const privateKey = await getStorage('private_key')
+	const results = await getStorage('private_key')
 
-	if (!privateKey || privateKey === '') {
+	if (!results || results === '') {
 		openOptionsWindow()
-		console.log('key not found : ', privateKey)
+		console.log('key not found : ', results)
 		return {error: {message: 'no private key found'}}
 	}
+	console.warn('results: ', results)
+	const privateKey = results as Uint8Array
 	try {
 		switch (type) {
 			case 'getPublicKey': {
-				// @ts-ignore - and ignore type mismatch
 				return getPublicKey(privateKey)
 			}
 			case 'signEvent': {
-				// @ts-ignore - and ignore type mismatch
 				const event = finalizeEvent(params.event, privateKey)
-				// @ts-ignore - and ignore type mismatch
 				return validateEvent(event) ? event : {error: {message: 'invalid event'}}
 			}
 			case 'nip04.encrypt': {
-				let {peer, plaintext} = params as {peer: string, plaintext: string}
-				// @ts-ignore - and ignore type mismatch
+				let {peer, plaintext} = params as {peer: string; plaintext: string}
 				return nip04.encrypt(privateKey, peer, plaintext)
 			}
 			case 'nip04.decrypt': {
-				let {peer, ciphertext} = params as {peer: string, ciphertext: string}
-				// @ts-ignore - and ignore type mismatch
+				let {peer, ciphertext} = params as {peer: string; ciphertext: string}
 				return nip04.decrypt(privateKey, peer, ciphertext)
 			}
 			case 'nip44.encrypt': {
-				const {peer, plaintext} = params as {peer: string, plaintext: string}
+				const {peer, plaintext} = params as {peer: string; plaintext: string}
 				// @ts-ignore - and ignore type mismatch
 				const key = getSharedSecret(privateKey, peer)
 				return nip44.encrypt(plaintext, key)
 			}
 			case 'nip44.decrypt': {
-				const {peer, ciphertext} = params as {peer: string, ciphertext: string}
+				const {peer, ciphertext} = params as {peer: string; ciphertext: string}
 				// @ts-ignore - and ignore type mismatch
 				const key = getSharedSecret(privateKey, peer)
 				return nip44.decrypt(ciphertext, key)
 			}
 			case 'nip19.npubEncode': {
-				// @ts-ignore - and ignore type mismatch
 				return nip19.npubEncode(params.pubkey)
 			}
 			case 'nip19.nsecEncode': {
-				// @ts-ignore - and ignore type mismatch
 				return nip19.nsecEncode(params.privkey)
 			}
 			case 'nip19.decode': {
-				// @ts-ignore - and ignore type mismatch
 				return nip19.decode(params.nip19)
 			}
 			case 'getRelays': {
